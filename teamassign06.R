@@ -1,6 +1,30 @@
 # Team Assignment 6
 #
 
+# Part 1
+trees <- read.csv("trees.csv", header = TRUE)
+
+r <- 37
+max.coordinate <- 750
+min.coordinate <- 0
+
+start <- proc.time() 
+
+x <- runif(10^5, min.coordinate-r, max.coordinate+r)
+y <- runif(10^5, min.coordinate-r, max.coordinate+r)
+
+t_hat <- rep(0,10^5)
+for(i in 1:10^5){
+  dist <- sqrt((trees$x-x[i])^2+(trees$y-y[i])^2)
+  sample <- trees[dist<=r,]
+  t_hat[i] <- (max.coordinate+2*r)^2/(pi*r^2) * sum(sample$ba)
+}
+
+t = 311.906
+100*(mean(t_hat) - t) / t
+100*sqrt(var(t_hat)) / t
+proc.time() - start
+
 # 1. A couple of examples of the proc.time function
 
 start <- proc.time()   # A slow example
