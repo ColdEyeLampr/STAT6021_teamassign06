@@ -1,32 +1,8 @@
 # Team Assignment 6
 #
 
-# Part 1
-trees <- read.csv("trees.csv", header = TRUE)
-
-r <- 37
-max.coordinate <- 750
-min.coordinate <- 0
-
-start <- proc.time() 
-
-x <- runif(10^5, min.coordinate-r, max.coordinate+r)
-y <- runif(10^5, min.coordinate-r, max.coordinate+r)
-
-t_hat <- rep(0,10^5)
-for(i in 1:10^5){
-  dist <- sqrt((trees$x-x[i])^2+(trees$y-y[i])^2)
-  sample <- trees[dist<=r,]
-  t_hat[i] <- (max.coordinate+2*r)^2/(pi*r^2) * sum(sample$ba)
-}
-
-t = 311.906
-100*(mean(t_hat) - t) / t
-100*sqrt(var(t_hat)) / t
-proc.time() - start
-
 # 1. A couple of examples of the proc.time function
-
+"
 start <- proc.time()   # A slow example
 t <- 0
 for (i in 1:1000000) {
@@ -37,7 +13,7 @@ proc.time() - start
 start <- proc.time()   # A faster example
 t <- sum(as.numeric(1:1000000))
 proc.time() - start
-
+"
 # 2. A gift to your team
 # "overlap.area(xt,yt,rl)" is a function that computes the intersection of
 # a disk of radius rl centered at (xt,yt) with the 750-by-750 region that
@@ -110,3 +86,73 @@ overlap.area <- function(xt,yt,rl) {
   }
   return(area)
 }
+
+
+############################################
+
+# Data Initialization
+trees <- read.csv("trees.csv", header = TRUE)
+
+r <- 37
+max.coordinate <- 750
+min.coordinate <- 0
+"
+# Part 1
+start <- proc.time() 
+
+x <- runif(10^5, min.coordinate-r, max.coordinate+r)
+y <- runif(10^5, min.coordinate-r, max.coordinate+r)
+
+t_hat <- rep(0,10^5)
+for(i in 1:10^5){
+  dist <- sqrt((trees$x-x[i])^2+(trees$y-y[i])^2)
+  sample <- trees[dist<=r,]
+  t_hat[i] <- (max.coordinate+2*r)^2/(pi*r^2) * sum(sample$ba)
+}
+
+t = 311.906
+100*(mean(t_hat) - t) / t
+100*sqrt(var(t_hat)) / t
+proc.time() - start
+"
+############################################
+
+# Part 2
+start <- proc.time() 
+
+x <- runif(10^5, min.coordinate, max.coordinate)
+y <- runif(10^5, min.coordinate, max.coordinate)
+
+t_hat <- rep(0,10^5)
+for(i in 1:10^5){
+  dist <- sqrt((trees$x-x[i])^2+(trees$y-y[i])^2)
+  sample <- trees[dist<=r,]
+  
+  if(nrow(sample)==0){
+    t_hat[i] <- 0
+  } else {
+    pi_i <- rep(0,nrow(sample))
+    for(j in 1:nrow(sample)){
+      
+      if((sample$x[j] <= r) | (sample$x[j] >= max.coordinate-r) | (sample$y[j] <= r) | (sample$y[j] >= max.coordinate-r)){
+        pi_i[j] <- overlap.area(sample$x[j], sample$y[j], r)/max.coordinate^2
+      } else {
+        pi_i[j] <- (pi*r^2)/max.coordinate^2
+      }
+    }
+    
+    sample$pi_i <- pi_i
+    
+    t_hat[i] <- sum(sample$ba/sample$pi_i)
+  }
+
+}
+
+t = 311.906
+100*(mean(t_hat) - t) / t
+100*sqrt(var(t_hat)) / t
+proc.time() - start
+
+
+
+
